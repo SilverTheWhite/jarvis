@@ -1,5 +1,3 @@
-Version 1.1
-
 import os
 import logging
 import time
