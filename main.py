@@ -25,14 +25,21 @@ MIC_INDEX = None
 TRIGGER_WORD = "jarvis"
 CONVERSATION_TIMEOUT = 30  # seconds of inactivity before exiting conversation mode
 
-logging.basicConfig(level=logging.DEBUG)  # logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"
+)
 
 # api_key = os.getenv("OPENAI_API_KEY") removed because it's not needed for ollama
 # org_id = os.getenv("OPENAI_ORG_ID") removed because it's not needed for ollama
 
 recognizer = sr.Recognizer()
-mic = sr.Microphone(device_index=MIC_INDEX)
-
+try:
+    mic = sr.Microphone(device_index=MIC_INDEX)
+except OSError as e:
+    logging.critical(f"❌ Microphone not found: {e}")
+    exit(1)
 # Initialize LLM
 llm = ChatOllama(model="qwen3:1.7b", reasoning=False)
 
@@ -106,10 +113,10 @@ def write():
 
                         logging.info("🤖 Sending command to agent...")
                         response = executor.invoke({"input": command})
-                        content = response["output"]
+                        content = response.get("output", "[No response]")
                         logging.info(f"✅ Agent responded: {content}")
 
-                        print("Jarvis:", content)
+                       logging.info(f"Jarvis: {content}")
                         speak_text(content)
                         last_interaction_time = time.time()
 
